@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8"><title>Kam-Dhanda</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#141414;--mut:#666;--line:#e2dfd8;--or:#ff8a00;--yl:#ffc400;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0d0d;--card:#1a1a1a;--ink:#f4f4f4;--mut:#aaa;--line:#333}}
+:root[data-theme="dark"]{--bg:#0d0d0d;--card:#1a1a1a;--ink:#f4f4f4;--mut:#aaa;--line:#333}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.45 "Noto Sans Devanagari",system-ui,sans-serif;max-width:480px;margin:0 auto;padding:0 14px 96px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 0}
+.logo{font-weight:800;font-size:26px}.logo b{color:var(--or)}
+.lang{display:flex;gap:6px}.lang button,.sp{min-width:44px;min-height:44px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700}
+.lang button.on{background:var(--yl);border-color:var(--yl);color:#111}
+.hero{text-align:center;padding:18px 0}
+.mic{width:128px;height:128px;border-radius:50%;border:0;background:var(--or);font-size:54px;box-shadow:0 0 0 10px rgba(255,138,0,.2)}
+.hero h2{margin:16px 0 4px;font-size:24px}
+.mut{color:var(--mut);margin:4px 0}
+.col{display:flex;flex-direction:column;gap:12px;margin:12px 0}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:62px;padding:10px 16px;border-radius:16px;border:0;background:var(--or);color:#111;font:inherit;font-size:19px;font-weight:700;text-decoration:none}
+.btn.alt{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.btn.done{background:#2e9e5b;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.cat{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:84px;padding:8px 4px;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:30px}
+.cat span{font-size:13px;font-weight:700;text-align:center;line-height:1.2}
+.cat.on{border-color:var(--or);background:rgba(255,138,0,.15)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px;margin:12px 0}
+.ct{font-size:20px;font-weight:800}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.thumbs{display:flex;gap:6px;margin:8px 0;overflow-x:auto}.thumbs img{width:96px;height:96px;object-fit:cover;border-radius:12px}
+label{display:block;margin:14px 0 4px;font-weight:700}
+.f{display:flex;gap:8px}
+input,select,textarea{flex:1;width:100%;min-height:54px;padding:10px 12px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.m{min-width:54px;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:24px}
+.empty{text-align:center;color:var(--mut);padding:30px 0}
+.x{border:0;background:none;font-size:20px;color:var(--ink)}
+#msg{display:none;position:fixed;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 8px);max-width:452px;margin:0 auto;background:#111;color:#fff;padding:14px;border-radius:14px;text-align:center;font-weight:700;z-index:9}
+nav{position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;display:flex;background:var(--card);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;min-height:64px;border:0;background:none;color:var(--mut);font:inherit;font-size:13px;font-weight:700}
+nav button b{display:block;font-size:24px}
+nav button.on{color:var(--or)}
+.demo{background:var(--yl);color:#111;border-radius:12px;padding:8px 12px;font-size:14px;font-weight:700}
+</style></head><body>
+<div id="msg"></div>
+<header><div class="logo">Kam-<b>Dhanda</b></div><div class="lang"><button onclick="setL(0)">हिं</button><button onclick="setL(1)">मरा</button><button onclick="setL(2)">EN</button><button class="sp" onclick="say(t('hint_'+view),1)">🔊</button></div></header>
+<div id="demo"></div><main id="app"></main>
+<nav><button onclick="nv('home')"><b>🏠</b><i id="n0"></i></button><button onclick="nv('jobs')"><b>🧰</b><i id="n1"></i></button><button onclick="nv('workers')"><b>👷</b><i id="n2"></i></button><button onclick="nv('me')"><b>👤</b><i id="n3"></i></button></nav>
+<script>
+const T={
+tap:["बोलकर काम ढूँढें","बोलून काम शोधा","Speak to find work"],
+sayEx:["जैसे: पुणे में पेंटर","उदा. पुण्यात पेंटर","e.g. painter in Pune"],
+listening:["सुन रहा हूँ…","ऐकत आहे…","Listening…"],
+iwork:["मुझे काम चाहिए","मला काम हवे","I need work"],
+ihire:["मुझे कारीगर चाहिए","मला कारागीर हवा","I want to hire"],
+home:["होम","मुख्य","Home"],jobs:["काम","कामे","Jobs"],workers:["कारीगर","कारागीर","Workers"],me:["मेरा","माझे","Mine"],
+cats:["काम चुनिए","काम निवडा","Pick a trade"],
+name:["नाम","नाव","Name"],phone:["फ़ोन नंबर","फोन नंबर","Phone"],skill:["आपका काम","तुमचे काम","Your trade"],
+exp:["अनुभव (साल)","अनुभव (वर्षे)","Experience (years)"],place:["शहर / इलाक़ा","शहर / परिसर","City / area"],
+about:["अपने काम के बारे में बताइए","तुमच्या कामाबद्दल सांगा","About your work"],
+photo:["📷 काम की फ़ोटो जोड़ें (3 तक)","📷 कामाचे फोटो जोडा (3 पर्यंत)","📷 Add work photos (up to 3)"],
+save:["सेव करें","सेव्ह करा","Save"],saved:["सेव हो गया ✔","सेव्ह झाले ✔","Saved ✔"],
+apply:["अप्लाई करें","अर्ज करा","Apply"],applied:["अप्लाई हो गया ✔","अर्ज केला ✔","Applied ✔"],
+call:["कॉल करें","कॉल करा","Call"],salary:["तनख़्वाह (₹)","पगार (₹)","Pay (₹)"],
+jtitle:["काम का नाम","कामाचे नाव","Job title"],post:["काम डालें","काम टाका","Post job"],
+none:["अभी कुछ नहीं मिला","काही सापडले नाही","Nothing found yet"],found:["काम मिले","कामे सापडली","jobs found"],
+myjobs:["मेरे डाले हुए काम","मी टाकलेली कामे","My jobs"],applicants:["अप्लाई करने वाले","अर्ज करणारे","Applicants"],
+myapps:["मैंने अप्लाई किया","मी अर्ज केले","My applications"],all:["सब","सर्व","All"],
+demo:["डेमो मोड: डेटा सेव नहीं होगा","डेमो मोड: डेटा सेव्ह होणार नाही","Demo mode: data is not saved"],
+need:["नाम और फ़ोन भरें","नाव आणि फोन भरा","Enter name and phone"],
+noVoice:["आवाज़ नहीं चली। लिंक को Chrome में खोलिए","आवाज चालली नाही. लिंक Chrome मध्ये उघडा","Voice did not work. Open the link in Chrome"],
+sw:["↔️ बदलें","↔️ बदला","↔️ Switch"],
+near:["📍 मेरे पास के काम","📍 माझ्या जवळची कामे","📍 Near me"],setloc:["📍 मेरी जगह जोड़ें","📍 माझे ठिकाण जोडा","📍 Add my location"],locok:["जगह मिल गई ✔","ठिकाण मिळाले ✔","Location found ✔"],locerr:["जगह नहीं मिली। फ़ोन की लोकेशन चालू करें और Chrome में खोलें","ठिकाण मिळाले नाही. फोनचे लोकेशन चालू करा आणि Chrome मध्ये उघडा","Location not found. Turn on phone location and open in Chrome"],
+sample:["नमूना (असली नहीं)","नमुना (खरे नाही)","Sample (not real)"],
+g0:["आस-पास के काम","जवळची कामे","Local work"],g1:["ऑनलाइन काम","ऑनलाइन कामे","Online work"],
+dur:["काम कितने समय का है","काम किती काळाचे आहे","How long is the job"],d_m6:["5-6 महीने","5-6 महिने","5-6 months"],d_y1:["1 साल","1 वर्ष","1 year"],d_y2:["पक्की नौकरी (1 साल से ज़्यादा)","कायमची नोकरी (1 वर्षापेक्षा जास्त)","Permanent (over 1 year)"],d_s:["कुछ दिन / हफ़्ते","काही दिवस / आठवडे","A few days / weeks"],stay:["🏠 रहने की व्यवस्था मिलेगी","🏠 राहण्याची सोय मिळेल","🏠 Stay provided"],trav:["कितने km तक जा सकते हैं","किती km पर्यंत जाऊ शकता","How far can you travel (km)"],trv:["🚌 जा सकते हैं (km): ","🚌 जाऊ शकतो (km): ","🚌 Can travel (km): "],longf:["⏳ सिर्फ़ लंबे काम (5+ महीने)","⏳ फक्त मोठी कामे (5+ महिने)","⏳ Long jobs only (5+ months)"],
+rate:["⭐ रेटिंग दें","⭐ रेटिंग द्या","⭐ Rate"],rateT:["अपना अनुभव लिखिए (छोटा)","तुमचा अनुभव लिहा (छोटा)","Write your experience (short)"],send:["भेजें","पाठवा","Send"],cancel:["रद्द करें","रद्द करा","Cancel"],hire:["✔ चुनें","✔ निवडा","✔ Select"],hired:["✔ चुन लिया गया","✔ निवड झाली","✔ Selected"],hiredok:["चुन लिया ✔","निवडले ✔","Selected ✔"],pending:["⏳ जवाब का इंतज़ार","⏳ उत्तराची वाट","⏳ Waiting for reply"],terms:["काम की शर्तें (समय, छुट्टी, ID वगैरह)","कामाच्या अटी (वेळ, सुट्टी, ID)","Job terms (hours, leave, ID needed)"],payw:["पैसा कब मिलेगा","पैसे कधी मिळतील","When is pay given"],p_d:["रोज़","रोज","Daily"],p_w:["हफ़्ते में","आठवड्यात","Weekly"],p_m:["महीने के अंत में","महिन्याच्या शेवटी","End of month"],applyT:["शर्तें मानकर अप्लाई करें","अटी मान्य करून अर्ज करा","Accept terms and apply"],report:["शिकायत","तक्रार","Report"],reported:["शिकायत दर्ज हुई ✔","तक्रार नोंदवली ✔","Report sent ✔"],
+warn:["⚠️ काम शुरू होने से पहले किसी अनजान को पैसे या एडवांस न दीजिए","⚠️ काम सुरू होण्यापूर्वी अनोळखी व्यक्तीला पैसे किंवा ऍडव्हान्स देऊ नका","⚠️ Never pay money or advance to a stranger before the work starts"],
+hint_home:["काम ढूँढने के लिए माइक दबाइए और बोलिए","काम शोधण्यासाठी माइक दाबा आणि बोला","Tap the mic and say the job and place"],
+hint_jobs:["अपने काम पर टैप कीजिए, फिर अप्लाई दबाइए","तुमच्या कामावर टॅप करा, मग अर्ज करा दाबा","Tap your trade, then press Apply"],
+hint_workers:["कारीगर देखिए और कॉल कीजिए","कारागीर पहा आणि कॉल करा","Browse workers and call them"],
+hint_me:["अपनी जानकारी भरिए, माइक से बोलकर भी भर सकते हैं","माहिती भरा, माइकने बोलूनही भरता येते","Fill your details, or speak using the mic"]};
+const C=[
+{id:"construction",e:"🧱",n:["मिस्त्री","बांधकाम","Construction"],k:"मिस्त्री,मिस्री,राजमिस्त्री,निर्माण,बांधकाम,मजदूर,मजूर,construction,mason,labour"},
+{id:"painting",e:"🎨",n:["पेंटर","रंगारी","Painting"],k:"पेंटर,पेंटिंग,रंग,रंगारी,painter,painting"},
+{id:"plumbing",e:"🚰",n:["प्लंबर","प्लंबर","Plumbing"],k:"प्लंबर,नल,पाइप,नळ,plumber,plumbing"},
+{id:"electrical",e:"⚡",n:["बिजली","इलेक्ट्रिशियन","Electrical"],k:"इलेक्ट्रीशियन,इलेक्ट्रिशियन,बिजली,वीज,वायरिंग,electrician,electrical"},
+{id:"carpentry",e:"🪚",n:["बढ़ई","सुतार","Carpentry"],k:"बढ़ई,बढई,सुतार,लकड़ी,फर्नीचर,carpenter,carpentry"},
+{id:"driving",e:"🚗",n:["ड्राइवर","ड्रायव्हर","Driving"],k:"ड्राइवर,ड्रायव्हर,चालक,गाड़ी,driver,driving"},
+{id:"cleaning",e:"🧹",n:["सफ़ाई","सफाई","Cleaning"],k:"सफाई,सफ़ाई,झाड़ू,स्वच्छता,cleaner,cleaning"},
+{id:"delivery",e:"📦",n:["डिलीवरी","डिलिव्हरी","Delivery"],k:"डिलीवरी,डिलिव्हरी,कूरियर,delivery"},
+{id:"shop",e:"🏪",n:["दुकान","दुकान","Shop work"],k:"दुकान,दुकानात,शॉप,shop"},
+{id:"hotel",e:"🍳",n:["होटल / शेफ","हॉटेल / शेफ","Hotel / Chef"],k:"होटल,हॉटेल,शेफ,कुक,रसोइया,वेटर,hotel,chef,cook,waiter,restaurant"},
+{id:"computer",g:1,e:"💻",n:["कंप्यूटर / ऑफिस","संगणक / ऑफिस","Computer / Office"],k:"कंप्यूटर,कम्प्यूटर,संगणक,ऑफिस,टाइपिंग,डेटा,computer,office,operator"},
+{id:"helper",e:"🤝",n:["हेल्पर","हेल्पर","Helper"],k:"हेल्पर,मदद,लड़का,helper"},
+{id:"mechanic",e:"🔧",n:["मैकेनिक","मेकॅनिक","Mechanic"],k:"मैकेनिक,मेकॅनिक,गैरेज,mechanic,garage"},
+{id:"tailor",e:"🧵",n:["दर्ज़ी","शिंपी","Tailor"],k:"दर्ज़ी,दर्जी,शिंपी,सिलाई,tailor"},
+{id:"beauty",e:"💇",n:["सैलून / ब्यूटी","सलून / ब्युटी","Salon / Beauty"],k:"सैलून,ब्यूटी,पार्लर,नाई,salon,beauty,barber"},
+{id:"security",e:"💂",n:["सिक्योरिटी गार्ड","सुरक्षा रक्षक","Security guard"],k:"सिक्योरिटी,गार्ड,चौकीदार,watchman,security,guard"},
+{id:"other",e:"🛠️",n:["दूसरा काम","इतर काम","Other"],k:"दूसरा,इतर,other"},
+{id:"design",g:1,e:"🖌️",n:["डिज़ाइन / लोगो","डिझाइन / लोगो","Design / Logo"],k:"डिज़ाइन,डिजाइन,लोगो,पोस्टर,design,logo,graphic"},
+{id:"video",g:1,e:"🎬",n:["वीडियो एडिटिंग","व्हिडिओ एडिटिंग","Video editing"],k:"वीडियो,एडिटिंग,रील,video,editing,reel"},
+{id:"writing",g:1,e:"✍️",n:["लिखना / अनुवाद","लेखन / भाषांतर","Writing / Translation"],k:"लेखन,लिखना,अनुवाद,भाषांतर,कंटेंट,writing,translation,content"},
+{id:"dev",g:1,e:"🌐",n:["वेबसाइट / ऐप","वेबसाइट / अॅप","Website / App"],k:"वेबसाइट,ऐप,वेबसाईट,website,developer,coding"},
+{id:"social",g:1,e:"📣",n:["सोशल मीडिया","सोशल मीडिया","Social media"],k:"सोशल,मीडिया,मार्केटिंग,विज्ञापन,social,marketing,instagram"},
+{id:"audio",g:1,e:"🎙️",n:["आवाज़ / वॉइस-ओवर","आवाज / व्हॉइस-ओव्हर","Voice-over"],k:"वॉइस,आवाज़,वॉयस,voice,audio,voiceover"},
+{id:"teach",g:1,e:"📚",n:["पढ़ाना / ट्यूशन","शिकवणी","Tutoring"],k:"ट्यूशन,पढ़ाना,शिक्षक,शिकवणी,tutor,teacher,tuition"},
+{id:"photo",g:1,e:"📷",n:["फ़ोटो / शूट","फोटो / शूट","Photography"],k:"फोटो,फ़ोटो,फोटोग्राफर,शूट,photo,photographer"},
+{id:"account",g:1,e:"🧾",n:["हिसाब / अकाउंट","हिशोब / अकाउंट","Accounts"],k:"हिसाब,अकाउंट,अकाउंटेंट,जीएसटी,account,accountant,gst,tally"},
+{id:"thumb",g:1,e:"🖼️",n:["थंबनेल / बैनर","थंबनेल / बॅनर","Thumbnail / Banner"],k:"थंबनेल,बैनर,बॅनर,thumbnail,banner"},
+{id:"content",g:1,e:"📝",n:["कंटेंट क्रिएशन","कंटेंट क्रिएशन","Content creation"],k:"कंटेंट,स्क्रिप्ट,ब्लॉग,यूट्यूब,content,script,blog,youtube"},
+{id:"anim",g:1,e:"🎞️",n:["एनिमेशन / 3D","अ‍ॅनिमेशन / 3D","Animation / 3D"],k:"एनिमेशन,अॅनिमेशन,animation,motion"},
+{id:"seo",g:1,e:"📈",n:["SEO / गूगल ऐड","SEO / गूगल अ‍ॅड","SEO / Google Ads"],k:"seo,एसईओ,गूगल,google ads"},
+{id:"ai",g:1,e:"🤖",n:["AI काम","AI काम","AI work"],k:"एआई,चैटजीपीटी,chatgpt,prompt,artificial"},
+{id:"va",g:1,e:"🧑‍💼",n:["वर्चुअल असिस्टेंट","व्हर्च्युअल असिस्टंट","Virtual assistant"],k:"असिस्टेंट,असिस्टंट,assistant,virtual,secretary"},
+{id:"support",g:1,e:"🎧",n:["कस्टमर सपोर्ट / टेलीकॉलिंग","कस्टमर सपोर्ट / टेलीकॉलिंग","Customer support / Telecalling"],k:"सपोर्ट,टेलीकॉलिंग,कॉलिंग,telecalling,support,calling"},
+{id:"oonline",g:1,e:"🧩",n:["दूसरा ऑनलाइन काम","इतर ऑनलाइन काम","Other online"],k:"ऑनलाइन,online"}];
+const SJ=[{id:"s1",cat:"construction",title:"राजमिस्त्री चाहिए",place:"Pune",salary:"900/दिन",desc:"दो मंज़िल की दीवार का काम",la:18.52,lo:73.86},{id:"s2",cat:"painting",title:"घर में पेंटिंग",place:"Mumbai",salary:"800/दिन",desc:"2 BHK का अंदर का रंग",la:19.07,lo:72.88},{id:"s3",cat:"plumbing",title:"नल और पाइप की मरम्मत",place:"Nagpur",salary:"600/दिन",desc:"नई बिल्डिंग में पाइपलाइन",la:21.15,lo:79.09},{id:"s4",cat:"electrical",title:"वायरिंग करने वाला",place:"Nashik",salary:"850/दिन",desc:"दुकान की नई वायरिंग",la:20.0,lo:73.78},{id:"s5",cat:"carpentry",title:"फर्नीचर बढ़ई",place:"Indore",salary:"750/दिन",desc:"अलमारी और दरवाज़े",la:22.72,lo:75.86},{id:"s6",cat:"driving",title:"गाड़ी चालक",place:"Delhi",salary:"15000/महीना",desc:"कार चलाने का अनुभव ज़रूरी",la:28.61,lo:77.21},{id:"s7",cat:"cleaning",title:"ऑफिस सफ़ाई",place:"Pune",salary:"12000/महीना",desc:"सुबह 3 घंटे",la:18.55,lo:73.9},{id:"s8",cat:"delivery",title:"डिलीवरी बॉय",place:"Jaipur",salary:"500/दिन",desc:"अपनी बाइक होनी चाहिए",la:26.91,lo:75.79},{id:"s9",cat:"shop",title:"दुकान पर हेल्पर",place:"Thane",salary:"10000/महीना",desc:"किराना दुकान",la:19.22,lo:72.98},{id:"s10",cat:"painting",title:"दीवार पर पुताई",place:"Pune",salary:"700/दिन",desc:"दुकान के बाहर का रंग",la:18.5,lo:73.82},{id:"s11",cat:"hotel",title:"होटल के लिए शेफ चाहिए",place:"Nagpur",salary:"18000/महीना",desc:"खाना बनाने का अनुभव ज़रूरी",la:21.15,lo:79.09},{id:"s12",cat:"computer",title:"कंप्यूटर चलाने वाला लड़का",place:"Chandrapur",salary:"9000/महीना",desc:"टाइपिंग और बिल बनाना",la:19.96,lo:79.3},{id:"s13",cat:"shop",title:"दुकान के लिए लड़का",place:"Chandrapur",salary:"8000/महीना",desc:"ग्राहकों को सामान देना",la:19.95,lo:79.29},{id:"s14",cat:"helper",title:"होटल में हेल्पर",place:"Nagpur",salary:"500/दिन",desc:"बर्तन और सफ़ाई में मदद",la:21.14,lo:79.1},{id:"s15",cat:"design",title:"दुकान के लिए लोगो डिज़ाइन",place:"Online",salary:"1500/प्रोजेक्ट",desc:"नाम और रंग मैं दूँगा"},{id:"s16",cat:"video",title:"रील्स की वीडियो एडिटिंग",place:"Online",salary:"3000/महीना",desc:"हर हफ़्ते 5 वीडियो"},{id:"s17",cat:"writing",title:"हिंदी से मराठी अनुवाद",place:"Online",salary:"2/शब्द",desc:"सामान्य लेख का अनुवाद"},{id:"s18",cat:"dev",title:"छोटी दुकान की वेबसाइट",place:"Online",salary:"8000/प्रोजेक्ट",desc:"5 पेज की साइट"},{id:"s19",cat:"security",title:"सिक्योरिटी गार्ड",place:"Mumbai",salary:"14000/महीना",desc:"रात की शिफ्ट",la:19.07,lo:72.88},{id:"s20",cat:"mechanic",title:"बाइक मैकेनिक",place:"Nagpur",salary:"700/दिन",desc:"गैरेज में काम",la:21.15,lo:79.09},{id:"s21",cat:"thumb",title:"YouTube वीडियो के लिए थंबनेल",place:"Online",salary:"300/थंबनेल",desc:"हर हफ़्ते 3 थंबनेल"},{id:"s22",cat:"content",title:"रील्स की स्क्रिप्ट लिखना",place:"Online",salary:"5000/महीना",desc:"हिंदी में रील्स की स्क्रिप्ट"},{id:"s23",cat:"support",title:"टेलीकॉलिंग (घर से काम)",place:"Online",salary:"10000/महीना",desc:"ग्राहकों को कॉल करना"}].map(x=>Object.assign(x,{sample:1,ts:0,phone:"",dur:["security","hotel","construction","mechanic","driving"].includes(x.cat)?"y1":x.cat=="painting"?"s":"m6",stay:["security","hotel"].includes(x.cat)?1:0,pay:"m",terms:"ID ज़रूरी, हफ़्ते में 1 छुट्टी"}));
+const SW=[{id:"w1",cat:"construction",name:"रमेश",place:"Pune",exp:"8",about:"मकान की चिनाई और प्लास्टर",la:18.52,lo:73.85},{id:"w2",cat:"painting",name:"सुनील",place:"Mumbai",exp:"5",about:"घर और दुकान की पेंटिंग",la:19.08,lo:72.87},{id:"w3",cat:"plumbing",name:"अजय",place:"Nagpur",exp:"6",about:"नल, पाइप और टंकी",la:21.14,lo:79.08},{id:"w4",cat:"electrical",name:"संतोष",place:"Nashik",exp:"10",about:"घर की वायरिंग और पंखे",la:20.01,lo:73.79},{id:"w5",cat:"carpentry",name:"इरफ़ान",place:"Indore",exp:"7",about:"लकड़ी का फर्नीचर",la:22.71,lo:75.85},{id:"w6",cat:"driving",name:"दीपक",place:"Delhi",exp:"12",about:"कार और ट्रक चलाना",la:28.6,lo:77.2}].map(x=>Object.assign(x,{sample:1,phone:"",photos:[],trav:"100"}));
+const ON=true;if(!ON){for(let i=C.length;i--;)if(C[i].g)C.splice(i,1);for(let i=SJ.length;i--;)if(!C.some(c=>c.id==SJ[i].cat))SJ.splice(i,1)}
+const DK={m6:"d_m6",y1:"d_y1",y2:"d_y2",s:"d_s"};
+function durSel(){return`<label>${t("dur")}</label><select onchange="D.dur=this.value">${["m6","y1","y2","s"].map(k=>`<option value="${k}" ${(D.dur||"m6")==k?"selected":""}>${t(DK[k])}</option>`).join("")}</select><label style="display:flex;gap:10px;align-items:center"><input type="checkbox" style="flex:none;width:28px;min-height:28px" ${D.stay?"checked":""} onchange="D.stay=this.checked?1:0">${t("stay")}</label><label>${t("payw")}</label><select onchange="D.pay=this.value">${["d","w","m"].map(k=>`<option value="${k}" ${(D.pay||"m")==k?"selected":""}>${t("p_"+k)}</option>`).join("")}</select>${fld("terms",t("terms"),"text",1)}`}
+const LC=["hi-IN","mr-IN","en-IN"],$=s=>document.querySelector(s),esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let L=0,rl=null,loc=null,grp=0,lng=0,rv=null,view="home",cat="",q="",uid="guest",db=null,gest=false,D={},S={workers:[],jobs:[],apps:[],reviews:[],reports:[]};
+const t=k=>T[k][L],cn=id=>{const c=C.find(c=>c.id===id)||C.find(c=>c.id=="other");return c.e+" "+c.n[L]};
+function toast(m,ms){const e=$("#msg");e.textContent=m;e.style.display=m?"block":"none";clearTimeout(toast.h);if(m&&ms!==0)toast.h=setTimeout(()=>e.style.display="none",ms||2500)}
+function say(x,g){if(g)gest=true;if(!gest)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(x);u.lang=LC[L];speechSynthesis.speak(u)}catch(e){}}
+function listen(cb){gest=true;const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("noVoice"));return}try{const r=new R();r.lang=LC[L];r.onresult=e=>{toast("");cb(e.results[0][0].transcript)};r.onerror=()=>toast(t("noVoice"));r.onend=()=>{if($("#msg").textContent===t("listening"))toast("")};toast(t("listening"),0);r.start()}catch(e){toast(t("noVoice"))}}
+function vs(){listen(tx=>{const s=tx.toLowerCase(),c=C.find(c=>c.k.split(",").some(w=>s.includes(w.toLowerCase())));cat=c?c.id:"";grp=c&&c.g?1:0;q=s;view="jobs";render();say(jf().length+" "+t("found"))})}
+function dict(k){listen(tx=>{D[k]=(D[k]?D[k]+" ":"")+tx;render()})}
+function getLoc(cb){if(!navigator.geolocation){toast(t("locerr"),4000);return}toast("📍…",0);navigator.geolocation.getCurrentPosition(p=>{loc={la:p.coords.latitude,lo:p.coords.longitude};toast(t("locok"));cb&&cb()},()=>toast(t("locerr"),5000),{timeout:12000,maximumAge:60000})}
+function setLoc(){getLoc(()=>{D.la=loc.la;D.lo=loc.lo;render()})}
+function km(o){if(!loc||!o||o.la==null)return null;const r=Math.PI/180,a=Math.sin((o.la-loc.la)*r/2)**2+Math.cos(o.la*r)*Math.cos(loc.la*r)*Math.sin((o.lo-loc.lo)*r/2)**2;return Math.round(12742*Math.asin(Math.sqrt(a))*10)/10}
+const byKm=(a,b)=>loc?((km(a)==null)-(km(b)==null))||(km(a)-km(b))||0:0;
+const nearBtn=()=>`<button class="btn alt" style="margin-top:8px" onclick="getLoc(render)">${loc?"✔ ":""}${t("near")}</button>`;
+const lbtn=()=>`<button class="btn alt" style="margin-top:8px" onclick="setLoc()">${D.la!=null?"✔ ":""}${t("setloc")}</button>`;
+function rt(id){const r=S.reviews.filter(x=>x.to==id);return r.length?`<span>⭐ ${(r.reduce((s,x)=>s+x.s,0)/r.length).toFixed(1)} (${r.length})</span>`:""}
+function rvPanel(){return`<div class="card"><div class="ct">${t("rate")}</div><div class="row">${[1,2,3,4,5].map(n=>`<button class="m" style="min-height:54px" onclick="rv.s=${n};render()">${n<=(rv.s||0)?"⭐":"☆"}</button>`).join("")}</div><label>${t("rateT")}</label><div class="f"><input value="${esc(rv.c||"")}" oninput="rv.c=this.value"><button class="m" onclick="listen(x=>{rv.c=(rv.c?rv.c+' ':'')+x;render()})">🎙️</button></div><div class="row" style="margin-top:10px"><button class="btn" onclick="sendRv()">${t("send")}</button><button class="btn alt" onclick="rv=null;render()">${t("cancel")}</button></div></div>`}
+function sendRv(){if(!rv.s)return;wr("reviews",rv.to+"_"+uid,{to:rv.to,from:uid,s:rv.s,c:rv.c||"",ts:Date.now()});rv=null;toast(t("saved"))}
+function hire(id){const a=S.apps.find(x=>x.id==id);if(!a)return;const d=Object.assign({},a,{status:"hired"});delete d.id;wr("apps",id,d);toast(t("hiredok"))}
+function report(id){wr("reports",uid+"_"+id,{target:id,from:uid,ts:Date.now()});toast(t("reported"))}
+function setL(i){L=i;document.documentElement.lang=["hi","mr","en"][i];render();say(t("hint_"+view),1)}
+function go(v){view=v;gest=true;render();scrollTo(0,0)}
+function nv(v){go(v);say(t("hint_"+v))}
+function wr(col,id,data){const o=Object.assign({id},data),i=S[col].findIndex(x=>x.id===id);i<0?S[col].push(o):S[col][i]=o;if(db)db.set(col,id,data).catch(()=>toast("⚠️"));render()}
+function chips(target,all){return`${ON?`<div class="row" style="margin-top:8px"><button class="btn ${grp?"alt":""}" onclick="grp=0;cat='';go('${target}')">🔧 ${t("g0")}</button><button class="btn ${grp?"":"alt"}" onclick="grp=1;cat='';go('${target}')">💻 ${t("g1")}</button></div>`:""}<div class="grid">${all?`<button class="cat ${!cat?"on":""}" onclick="cat='';go('${target}')">✨<span>${t("all")}</span></button>`:""}${C.filter(c=>(c.g||0)==grp).map(c=>`<button class="cat ${cat===c.id?"on":""}" onclick="cat='${c.id}';go('${target}')">${c.e}<span>${c.n[L]}</span></button>`).join("")}</div>`}
+function jf(){const ws=q?q.split(/\s+/).filter(w=>w.length>2):[],pm=j=>ws.some(w=>(j.place||"").toLowerCase().includes(w))?1:0;return S.jobs.concat(S.jobs.length<6?SJ:[]).filter(j=>(!cat||j.cat===cat)&&(!lng||["m6","y1","y2"].includes(j.dur))).sort((a,b)=>pm(b)-pm(a)||byKm(a,b)||(b.ts||0)-(a.ts||0))}
+function jc(j,own){const done=S.apps.some(a=>a.id===j.id+"_"+uid),ap=S.apps.filter(a=>a.jobId===j.id);return`<div class="card"><div class="ct">${cn(j.cat)}</div><div><b>${esc(j.title)}</b> ${rt(j.owner)}</div><div class="mut">📍 ${esc(j.place)}${km(j)!=null?" · "+km(j)+" km":""} · ₹${esc(j.salary)}</div>${j.dur?`<div>⏳ ${t(DK[j.dur])}${j.stay?" · "+t("stay"):""}</div>`:""}${j.pay?`<div>💰 ${t("p_"+j.pay)}</div>`:""}${j.terms?`<div class="mut">📋 ${esc(j.terms)}</div>`:""}<p>${esc(j.desc)}</p>${j.sample||own?"":`<button class="x" onclick="report('${j.id}')">🚩 ${t("report")}</button>`}${own?`<b>${t("applicants")}: ${ap.length}</b>${ap.map(a=>`<div class="card" style="margin:8px 0"><div class="row" style="align-items:center"><span>${esc(a.name)} ${rt(a.wid)}</span><a class="btn alt" style="min-height:48px" href="tel:${esc(a.phone)}">📞 ${esc(a.phone)}</a></div>${stBox(a)}</div>`).join("")}`:`${j.sample?`<div class="demo">${t("sample")}</div>`:`<div class="row"><button class="btn ${done?"done":""}" onclick="ap('${j.id}')">${done?t("applied"):t(j.terms?"applyT":"apply")}</button><a class="btn alt" href="tel:${esc(j.phone)}">📞 ${t("call")}</a></div>`}`}</div>`}
+function wc(w){return`<div class="card"><div class="ct">${cn(w.cat)}</div><b>${esc(w.name)}</b>${w.phoneVerified?" ✔":""} ${rt(w.id)}<div class="mut">📍 ${esc(w.place)}${km(w)!=null?" · "+km(w)+" km":""} · ${esc(w.exp)} ${L==2?"yrs":L?"वर्षे":"साल"}</div>${w.trav?`<div>${t("trv")}${esc(w.trav)}</div>`:""}${(w.photos||[]).length?`<div class="thumbs">${w.photos.map(p=>`<img src="${p}" alt="">`).join("")}</div>`:""}<p>${esc(w.about)}</p>${w.sample?"":`<button class="x" onclick="report('${w.id}')">🚩 ${t("report")}</button>`}${w.sample?`<div class="demo">${t("sample")}</div>`:`<a class="btn" href="tel:${esc(w.phone)}">📞 ${t("call")}</a>`}</div>`}
+function ap(id){const w=S.workers.find(w=>w.id===uid);if(!w){toast(t("need"));go("me");return}wr("apps",id+"_"+uid,{jobId:id,wid:uid,name:w.name,phone:w.phone,agreed:1,ts:Date.now()});toast(t("applied"));say(t("applied"))}
+function fld(k,lab,type,mic){return`<label>${lab}</label><div class="f"><input name="${k}" type="${type||"text"}" ${type=="tel"||type=="number"?'inputmode="numeric"':""} value="${esc(D[k]||"")}" oninput="D.${k}=this.value">${mic?`<button class="m" onclick="dict('${k}')">🎤</button>`:""}</div>`}
+function sel(){return`<label>${t("skill")}</label><select onchange="D.cat=this.value">${C.map(c=>`<option value="${c.id}" ${(D.cat||"construction")==c.id?"selected":""}>${c.e} ${c.n[L]}</option>`).join("")}</select>`}
+function ph(files){[...files].slice(0,3).forEach(f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,420/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);D.photos=((D.photos||[]).concat(c.toDataURL("image/jpeg",.5))).slice(-3);render()};im.src=r.result};r.readAsDataURL(f)})}
+function saveW(){if(!D.name||!D.phone){toast(t("need"));return}wr("workers",uid,{name:D.name,phone:D.phone,cat:D.cat||"construction",exp:D.exp||"0",trav:D.trav||"",place:D.place||"",about:D.about||"",photos:D.photos||[],...(D.la!=null?{la:D.la,lo:D.lo}:{}),ts:Date.now()});toast(t("saved"));say(t("saved"))}
+function saveJ(){if(!D.jtitle||!D.phone){toast(t("need"));return}wr("jobs","j"+Date.now().toString(36)+String(uid).slice(0,4),{title:D.jtitle,cat:D.cat||"construction",salary:D.salary||"",place:D.place||"",desc:D.about||"",phone:D.phone,owner:uid,dur:D.dur||"m6",stay:D.stay||0,pay:D.pay||"m",terms:D.terms||"",...(D.la!=null?{la:D.la,lo:D.lo}:{}),ts:Date.now()});D={};toast(t("saved"));say(t("saved"))}
+const V={
+home:()=>`<div class="hero"><button class="mic" onpointerdown="micDown(event)" onpointerup="micUp()" onpointercancel="micUp()" oncontextmenu="return false">🎤</button><h2>${t("tap")}</h2><p class="mut">${t("sayEx")}</p></div><div class="col"><button class="btn" onclick="rl='worker';D={};go('me')">👷 ${t("iwork")}</button><button class="btn alt" onclick="rl='employer';D={};go('me')">🏗️ ${t("ihire")}</button><button class="btn alt" onclick="getLoc(()=>go('jobs'))">${t("near")}</button></div><h3>${t("cats")}</h3>${chips("jobs")}`,
+jobs:()=>{const l=jf();return `<div class="demo" style="margin-top:8px">${t("warn")}</div>`+nearBtn()+`<button class="btn ${lng?"":"alt"}" style="margin-top:8px" onclick="lng=lng?0:1;render()">${lng?"✔ ":""}${t("longf")}</button>`+chips("jobs",1)+(q?`<p class="mut">🎤 ${esc(q)} <button class="x" onclick="q='';render()">✕</button></p>`:"")+(l.length?l.map(j=>jc(j)).join(""):`<p class="empty">${t("none")}</p>`)},
+workers:()=>{const l=S.workers.concat(S.workers.length<4?SW:[]).filter(w=>!cat||w.cat===cat).filter(areaOK).sort(byKm);return nearBtn()+chips("workers",1)+(l.length?l.map(wc).join(""):`<p class="empty">${t("none")}</p>`)},
+me:()=>{if(!rl)return V.home();const sw=`<button class="btn alt" onclick="rl=rl=='worker'?'employer':'worker';D={};render()">${t("sw")}</button>`;
+if(rl=="worker"){if(!D.init){Object.assign(D,S.workers.find(w=>w.id==uid)||{});D.init=1}const my=S.apps.filter(a=>a.wid==uid);
+return`${fld("name",t("name"),"text",1)}${fld("phone",t("phone"),"tel")}${sel()}${fld("exp",t("exp"),"number")}${fld("trav",t("trav"),"number")}${fld("place",t("place"),"text",1)}${lbtn()}${fld("about",t("about"),"text",1)}<label>${t("photo")}</label><input type="file" accept="image/*" multiple onchange="ph(this.files)"><div class="thumbs">${(D.photos||[]).map(p=>`<img src="${p}" alt="">`).join("")}</div><div class="col"><button class="btn" onclick="saveW()">${t("save")}</button>${sw}</div>${my.length?`<h3>${t("myapps")}</h3>${my.map(a=>{const j=S.jobs.find(j=>j.id==a.jobId);return j?`<div class="card"><b>${esc(j.title)}</b> ${rt(j.owner)}<div class="mut">📍 ${esc(j.place)} · ₹${esc(j.salary)}</div><div>${a.status=="hired"?t("hired"):t("pending")}</div>${a.status=="hired"?`<button class="btn alt" style="min-height:48px;margin-top:8px" onclick="rv={to:'${j.owner}'};render();scrollTo(0,0)">${t("rate")}</button>`:""}</div>`:""}).join("")}`:""}`}
+const mine=S.jobs.filter(j=>j.owner==uid);
+return`${fld("jtitle",t("jtitle"),"text",1)}${sel()}${fld("salary",t("salary"),"number")}${durSel()}${fld("place",t("place"),"text",1)}${lbtn()}${fld("about","📝","text",1)}${fld("phone",t("phone"),"tel")}<div class="col"><button class="btn" onclick="saveJ()">${t("post")}</button>${sw}</div>${mine.length?`<h3>${t("myjobs")}</h3>${mine.map(j=>jc(j,1)).join("")}`:""}`}};
+function render(){$("#app").innerHTML=(rv?rvPanel():"")+V[view]();for(let i=0;i<4;i++){const n=["home","jobs","workers","me"][i];$("#n"+i).textContent=t(n);$("nav").children[i].className=view==n?"on":""}[...document.querySelectorAll(".lang button:not(.sp)")].forEach((b,i)=>b.className=i==L?"on":"");$("#demo").innerHTML=db?"":`<div class="demo">${t("demo")}</div>`}
+function attach(api){db=api;uid=api.uid;["workers","jobs","apps","reviews"].forEach(c=>api.watch(c,rows=>{S[c]=rows;if(!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))render()}));render()}
+window.attach=attach;
+render();
+</script>
+<script>
+/* ===== v2: language page, registration, 4 tabs, career, employer replies ===== */
+const TT={
+mob:["अपना मोबाइल नंबर डालिए","तुमचा मोबाईल नंबर टाका","Enter your mobile number"],
+mobnote:["OTP से जाँच बाद में जुड़ेगी। अभी नंबर जाँचा हुआ नहीं रहेगा।","OTP पडताळणी नंतर जोडली जाईल. सध्या नंबर पडताळलेला नाही.","OTP check comes later. For now the number stays not verified."],
+cont:["आगे बढ़ें","पुढे जा","Continue"],badnum:["10 अंक का सही नंबर डालिए","10 अंकी बरोबर नंबर टाका","Enter a valid 10-digit number"],
+soon:["अनुवाद जल्द","भाषांतर लवकरच","Translation soon"],
+soonmsg:["इस भाषा का अनुवाद अभी पूरा नहीं है। अभी हिंदी में चलेगा।","या भाषेचे भाषांतर अजून पूर्ण नाही. सध्या हिंदीत चालेल.","This language is not translated yet. Using Hindi for now."],
+basic:["आपकी बुनियादी जानकारी","तुमची मूलभूत माहिती","Your basic details"],age:["उम्र","वय","Age"],state:["राज्य","राज्य","State"],city:["शहर","शहर","City"],area:["इलाक़ा (वैकल्पिक)","परिसर (ऐच्छिक)","Local area (optional)"],edu:["पढ़ाई","शिक्षण","Education"],
+needb:["नाम, उम्र, राज्य और शहर भरिए","नाव, वय, राज्य आणि शहर भरा","Fill name, age, state and city"],
+skills:["आपके स्किल चुनिए","तुमची कौशल्ये निवडा","Pick your skills"],s1:["सामान्य नौकरियाँ","सामान्य नोकऱ्या","Basic Skills"],s2:["कामधंधा स्किल","कामधंधा कौशल्ये","Kam-Dhanda Skills"],s3:["अपना स्किल लिखें","स्वतःचे कौशल्य लिहा","Write Your Own"],
+add:["जोड़ें","जोडा","Add"],ownph:["जैसे: App Logo Designer","उदा. App Logo Designer","e.g. App Logo Designer"],
+yrs:["अनुभव (साल)","अनुभव (वर्षे)","Experience (years)"],l1:["शुरुआती","नवशिक्या","Beginner"],l2:["बीच का","मध्यम","Intermediate"],l3:["अनुभवी","अनुभवी","Experienced"],
+sdesc:["इस स्किल के बारे में (वैकल्पिक)","या कौशल्याबद्दल (ऐच्छिक)","About this skill (optional)"],
+course:["डिग्री / कोर्स का नाम (वैकल्पिक)","पदवी / कोर्सचे नाव (ऐच्छिक)","Degree / course name (optional)"],courseph:["जैसे: B.Tech, Nursing, Pharma… या अपना लिखिए","उदा. B.Tech, Nursing, Pharma… किंवा स्वतः लिहा","e.g. B.Tech, Nursing, Pharma… or type your own"],
+fin:["रजिस्ट्रेशन पूरा करें","नोंदणी पूर्ण करा","Finish registration"],needsk:["कम से कम एक स्किल चुनिए","किमान एक कौशल्य निवडा","Pick at least one skill"],
+nv:["जाँचा हुआ नहीं","पडताळलेला नाही","not verified"],
+hm:["होम","मुख्य","Home"],kaam:["काम","काम","Kaam"],car:["कैरियर","करिअर","Career"],mine:["मेरा","माझे","Mera"],
+myskills:["मेरे स्किल","माझी कौशल्ये","My skills"],applied2:["मैंने अप्लाई किया","मी अर्ज केले","My applications"],noapp:["अभी कोई अप्लाई नहीं किया","अजून अर्ज नाही","No applications yet"],
+st_applied:["अप्लाई किया","अर्ज केला","Applied"],st_review:["जाँच में","तपासणीत","Under review"],st_interested:["मालिक को पसंद आया","मालकाला आवडले","Employer interested"],st_invite:["इंटरव्यू का बुलावा","मुलाखतीचे आमंत्रण","Interview invited"],st_demo:["डेमो माँगा","डेमो मागितला","Demo requested"],st_hired:["चुन लिया गया","निवड झाली","Selected"],st_rejected:["नहीं चुना गया","निवड नाही","Not selected"],st_filled:["जगह भर गई","जागा भरली","Position filled"],
+st_now:["अभी की स्थिति","सध्याची स्थिती","Status now"],st_msg:["उम्मीदवार को संदेश (वैकल्पिक)","उमेदवाराला संदेश (ऐच्छिक)","Message to candidate (optional)"],msgfrom:["मालिक का संदेश","मालकाचा संदेश","Employer message"],
+srch:["काम, स्किल या शहर खोजिए","काम, कौशल्य किंवा शहर शोधा","Search job, skill or city"],rec:["आपके लिए काम","तुमच्यासाठी कामे","Jobs for you"],
+findw:["👷 कारीगर खोजें","👷 कारागीर शोधा","👷 Find workers"],findj:["🧰 काम देखें","🧰 कामे पहा","🧰 See jobs"],langs:["भाषा बदलिए","भाषा बदला","Change language"]};
+const tt=k=>TT[k][L];
+const LG=[["hi","हिन्दी","Hindi",0],["mr","मराठी","Marathi",1],["en","English","English",2],["bn","বাংলা","Bengali",-1],["ta","தமிழ்","Tamil",-1],["te","తెలుగు","Telugu",-1],["gu","ગુજરાતી","Gujarati",-1],["kn","ಕನ್ನಡ","Kannada",-1],["ml","മലയാളം","Malayalam",-1],["pa","ਪੰਜਾਬੀ","Punjabi",-1],["or","ଓଡ଼ିଆ","Odia",-1],["as","অসমীয়া","Assamese",-1],["ur","اردو","Urdu",-1],["ks","कॉशुर","Kashmiri",-1],["kok","कोंकणी","Konkani",-1],["ne","नेपाली","Nepali",-1],["sa","संस्कृतम्","Sanskrit",-1],["sd","سنڌي","Sindhi",-1],["doi","डोगरी","Dogri",-1],["mni","মৈতৈলোন্","Manipuri",-1],["brx","बड़ो","Bodo",-1],["sat","ᱥᱟᱱᱛᱟᱲᱤ","Santali",-1]].map(x=>({c:x[0],n:x[1],e:x[2],s:x[3]}));
+const STATES="Andhra Pradesh,Arunachal Pradesh,Assam,Bihar,Chhattisgarh,Goa,Gujarat,Haryana,Himachal Pradesh,Jharkhand,Karnataka,Kerala,Madhya Pradesh,Maharashtra,Manipur,Meghalaya,Mizoram,Nagaland,Odisha,Punjab,Rajasthan,Sikkim,Tamil Nadu,Telangana,Tripura,Uttar Pradesh,Uttarakhand,West Bengal,Delhi,Jammu and Kashmir,Ladakh,Chandigarh,Puducherry,Andaman and Nicobar Islands,Lakshadweep,Dadra and Nagar Haveli and Daman and Diu".split(",");
+const EDU=["10वीं से कम / Below 10th","10वीं पास / 10th pass","12वीं पास / 12th pass","ITI / Diploma","ग्रेजुएट डिग्री / Graduate","पोस्ट-ग्रेजुएट / Postgraduate","प्रोफ़ेशनल कोर्स / Professional course","पढ़ाई जारी है / Studying"];
+const COURSES="B.Tech / B.E. (Engineering),Diploma Engineering,ITI Electrician,ITI Fitter,ITI Welder,ITI Mechanic,Nursing (GNM),B.Sc Nursing,D.Pharm,B.Pharm,MBBS,BDS,BAMS,BHMS,BPT (Physiotherapy),DMLT (Lab Technician),B.Ed,D.Ed,B.A.,B.Com,B.Sc,BBA,BCA,MBA,MCA,M.Tech,M.A.,M.Com,M.Sc,LLB,CA,CS,CMA,B.Sc Agriculture,Hotel Management,Architecture,Interior Design,Fashion Design,Animation / Multimedia,Journalism,Polytechnic,Tally / Accounting course,Computer course (MS-CIT / DCA),PhD".split(",");
+const BS=[["Office Worker","computer"],["Office Assistant","computer"],["Back Office Executive","computer"],["Data Entry Operator","computer"],["Computer Operator","computer"],["Accountant","account"],["Receptionist","computer"],["Telecaller","support"],["Customer Support Executive","support"],["Salesman","shop"],["Sales Executive","shop"],["Marketing Executive","social"],["HR Assistant","computer"],["Cashier","shop"],["Store Keeper","shop"],["Delivery Boy","delivery"],["Driver","driving"],["Security Guard","security"],["Waiter","hotel"],["Cook","hotel"],["Hotel Staff","hotel"],["Restaurant Staff","hotel"],["Housekeeping Staff","cleaning"],["Factory Worker","helper"],["Warehouse Worker","helper"],["Packing Staff","helper"],["Machine Operator","helper"],["Field Worker","helper"],["Technician","mechanic"],["Teacher","teach"],["Tutor","teach"]];
+const KS=[["Electrician","electrical"],["Plumber","plumbing"],["Painter","painting"],["Carpenter","carpentry"],["Mason","construction"],["Construction Worker","construction"],["Labour","construction"],["Tile Fitter","construction"],["Welder","mechanic"],["Mechanic","mechanic"],["Bike Mechanic","mechanic"],["Car Mechanic","mechanic"],["AC Repair Technician","electrical"],["Refrigerator Repair Technician","electrical"],["Mobile Repair Technician","electrical"],["Computer Repair Technician","computer"],["CCTV Installer","electrical"],["Machine Repair Technician","mechanic"],["Furniture Maker","carpentry"],["Interior Work Specialist","carpentry"],["POP Worker","construction"],["Aluminium Fabricator","mechanic"],["Glass Fitter","construction"],["Cleaning Worker","cleaning"],["Gardening Worker","helper"],["Farm Worker","helper"],["Other Skilled Worker","other"]];
+const ST=["review","interested","invite","demo","hired","rejected","filled"],SLT=k=>tt("st_"+k);
+let OB={step:0,q:"",tab:0,d:{ph:"",nm:"",age:"",st:"",ct:"",ar:"",ed:"",lang:"hi"},sk:[]},SQ="",LW=0,BOOT=1,AM={};
+const oi=(k,lab,ty)=>`<label>${lab}</label><input type="${ty||"text"}" ${ty=="number"?'inputmode="numeric"':""} value="${esc(OB.d[k])}" oninput="OB.d.${k}=this.value">`;
+function obList(){const dev=(navigator.languages||[navigator.language||"en"]).map(x=>x.toLowerCase().split("-")[0]),q=OB.q.toLowerCase();
+return LG.filter(x=>!q||(x.n+" "+x.e).toLowerCase().includes(q)).sort((a,b)=>{const r=x=>dev.indexOf(x.c)<0?99:dev.indexOf(x.c);return r(a)-r(b)||a.e.localeCompare(b.e)}).map(x=>`<button class="btn alt" style="justify-content:space-between;margin-top:8px" onclick="pickLang('${x.c}')"><span>${x.n} <span class="mut">${x.e}</span></span><span>${x.s>=0?"✔":tt("soon")}</span></button>`).join("")}
+function pickLang(c){const x=LG.find(y=>y.c==c);OB.d.lang=c;if(x.s>=0)L=x.s;else{L=0;toast(tt("soonmsg"),4000)}document.documentElement.lang=["hi","mr","en"][L];OB.step=1;render()}
+function toggleSk(g,i){const[n,c]=(g?KS:BS)[i],k=OB.sk.findIndex(s=>s.n==n);k<0?OB.sk.push({n,c,y:"",l:1,d:""}):OB.sk.splice(k,1);render()}
+function addOwn(){const v=($("#own").value||"").trim();if(!v)return;if(!OB.sk.some(s=>s.n==v))OB.sk.push({n:v,c:"other",y:"",l:1,d:""});render()}
+function obNext(){const d=OB.d;if(OB.step==1){if(!/^[6-9]\d{9}$/.test(d.ph)){toast(tt("badnum"));return}}
+if(OB.step==2&&!(d.nm&&d.age&&d.st&&d.ct)){toast(tt("needb"));return}OB.step++;render();scrollTo(0,0)}
+function finish(){if(!OB.sk.length){toast(tt("needsk"));return}const d=OB.d,mx=Math.max(0,...OB.sk.map(s=>+s.y||0));
+wr("workers",uid,{name:d.nm,phone:d.ph,phoneVerified:!!d.pv,age:d.age,state:d.st,city:d.ct,place:d.ar||d.ct,edu:d.ed,course:d.co||"",lang:d.lang,skills:OB.sk,cat:OB.sk[0].c,exp:String(mx),trav:"",about:OB.sk[0].d||"",photos:[],ts:Date.now()});rl="worker";D={};view="home";render();scrollTo(0,0)}
+function obHtml(){const s=OB.step,d=OB.d,pg=`<div class="mut" style="margin-top:10px">${s+1}/4</div>`;
+if(s==0)return pg+`<h2>भाषा चुनें · Choose your language</h2><input placeholder="🔍 Search / खोजें" value="${esc(OB.q)}" oninput="OB.q=this.value;$('#ll').innerHTML=obList()"><div id="ll">${obList()}</div>`;
+if(s==1)return pg+`<h2>${tt("mob")}</h2><div class="f"><span class="btn alt" style="width:auto;min-height:54px">+91</span><input type="tel" inputmode="numeric" maxlength="10" value="${esc(d.ph)}" oninput="OB.d.ph=this.value"></div><p class="mut">${tt("mobnote")}</p><div class="col"><button class="btn" onclick="obNext()">${tt("cont")}</button></div>`;
+if(s==2)return pg+`<h2>${tt("basic")}</h2>${oi("nm",t("name"))}${oi("age",tt("age"),"number")}<label>${tt("state")}</label><select onchange="OB.d.st=this.value"><option value="">—</option>${STATES.map(x=>`<option ${d.st==x?"selected":""}>${x}</option>`).join("")}</select>${oi("ct",tt("city"))}${oi("ar",tt("area"))}<label>${tt("edu")}</label><select onchange="OB.d.ed=this.value"><option value="">—</option>${EDU.map(x=>`<option ${d.ed==x?"selected":""}>${x}</option>`).join("")}</select><label>${tt("course")}</label><input list="crs" value="${esc(d.co||"")}" placeholder="${tt("courseph")}" oninput="OB.d.co=this.value"><datalist id="crs">${COURSES.map(x=>`<option value="${x}">`).join("")}</datalist><div class="col"><button class="btn" onclick="obNext()">${tt("cont")}</button></div>`;
+const tabs=["s1","s2","s3"].map((k,i)=>`<button class="btn ${OB.tab==i?"":"alt"}" style="min-height:48px;font-size:15px;padding:6px" onclick="OB.tab=${i};render()">${tt(k)}</button>`).join("");
+const chip=(g,i,n)=>{const on=OB.sk.some(s=>s.n==n);return`<button class="btn alt" style="width:auto;min-height:44px;font-size:15px;padding:6px 12px;margin:4px 4px 0 0;display:inline-flex;${on?"border-color:var(--or);background:rgba(255,138,0,.2)":""}" onclick="toggleSk(${g},${i})">${on?"✔ ":""}${n}</button>`};
+const body=OB.tab==0?BS.map((x,i)=>chip(0,i,x[0])).join(""):OB.tab==1?KS.map((x,i)=>chip(1,i,x[0])).join(""):`<div class="f"><input id="own" placeholder="${tt("ownph")}"><button class="m" onclick="addOwn()">${tt("add")}</button></div>`;
+const sel=OB.sk.map((x,i)=>`<div class="card"><b>${esc(x.n)}</b> <button class="x" onclick="OB.sk.splice(${i},1);render()">✕</button><label>${tt("yrs")}</label><input type="number" inputmode="numeric" value="${esc(x.y)}" oninput="OB.sk[${i}].y=this.value"><select onchange="OB.sk[${i}].l=+this.value" style="margin-top:8px">${[1,2,3].map(n=>`<option value="${n}" ${x.l==n?"selected":""}>${tt("l"+n)}</option>`).join("")}</select><input style="margin-top:8px" placeholder="${tt("sdesc")}" value="${esc(x.d)}" oninput="OB.sk[${i}].d=this.value"></div>`).join("");
+return pg+`<h2>${tt("skills")}</h2><div class="row">${tabs}</div><div style="margin-top:8px">${body}</div>${sel}<div class="col"><button class="btn" onclick="finish()">${tt("fin")}</button></div>`}
+function stBox(a){const m=AM[a.id]||(AM[a.id]={s:a.status&&a.status!="applied"?a.status:"review",m:a.msg||""});return`<div style="width:100%"><div>${tt("st_now")}: <b>${SLT(a.status||"applied")}</b></div><select style="margin-top:6px" onchange="AM['${a.id}'].s=this.value">${ST.map(k=>`<option value="${k}" ${m.s==k?"selected":""}>${SLT(k)}</option>`).join("")}</select><input style="margin-top:6px" placeholder="${tt("st_msg")}" value="${esc(m.m)}" oninput="AM['${a.id}'].m=this.value"><button class="btn" style="min-height:48px;margin-top:6px" onclick="sendSt('${a.id}')">${t("send")}</button>${a.status=="hired"?dealBox(a,1):""}${dealDone(a)?`<button class="btn alt" style="min-height:48px;margin-top:6px" onclick="rv={to:'${a.wid}'};render();scrollTo(0,0)">${t("rate")}</button>`:""}</div>`}
+function sendSt(id){const a=S.apps.find(x=>x.id==id),m=AM[id];if(!a||!m)return;const d=Object.assign({},a,{status:m.s,msg:m.m,seenW:0});delete d.id;wr("apps",id,d);toast(t("saved"))}
+function markSeen(){S.apps.filter(a=>a.wid==uid&&a.status&&a.status!="applied"&&!a.seenW).forEach(a=>{const d=Object.assign({},a,{seenW:1});delete d.id;wr("apps",a.id,d)})}
+saveW=function(){if(!D.name||!D.phone){toast(t("need"));return}const me=Object.assign({},S.workers.find(w=>w.id==uid)||{});delete me.id;wr("workers",uid,Object.assign(me,{name:D.name,phone:D.phone,cat:D.cat||me.cat||"other",exp:D.exp||me.exp||"0",trav:D.trav||"",place:D.place||"",about:D.about||"",photos:D.photos||[],ts:Date.now()},D.la!=null?{la:D.la,lo:D.lo}:{}));toast(t("saved"));say(t("saved"))};
+const _jf=jf;jf=function(){let l=_jf();if(SQ)l=l.filter(j=>[j.title,j.desc,j.place,cn(j.cat)].join(" ").toLowerCase().includes(SQ));return l};
+const _go=go;go=function(v){_go(v);if(v=="career")markSeen()};
+const _home=V.home,_jobs=V.jobs,_wk=V.workers,_me=V.me;
+V.home=function(){const me=S.workers.find(w=>w.id==uid)||{},mine=(me.skills||[]).map(s=>s.c),rec=S.jobs.concat(S.jobs.length<6?SJ:[]).filter(j=>mine.includes(j.cat)).slice(0,3);
+return`<div class="f" style="margin-top:6px"><input id="sq" placeholder="${tt("srch")}" value="${esc(SQ)}"><button class="m" onclick="SQ=$('#sq').value.toLowerCase();go('jobs')">🔍</button></div>`+_home()+`<h3>${tt("rec")}</h3>`+(rec.length?rec.map(j=>jc(j)).join(""):`<p class="empty">${t("none")}</p>`)};
+V.jobs=function(){return`<button class="btn alt" style="margin-top:8px" onclick="go('workers')">${tt("findw")}</button>`+(SQ?`<p class="mut">🔍 ${esc(SQ)} <button class="x" onclick="SQ='';render()">✕</button></p>`:"")+_jobs()};
+V.workers=function(){return`<button class="btn alt" style="margin-top:8px" onclick="go('jobs')">${tt("findj")}</button>`+_wk()};
+V.me=function(){if(!rl)rl="worker";return`<div class="card"><b>${tt("langs")}</b><div class="row" style="margin-top:8px">${["हिं","मरा","EN"].map((n,i)=>`<button class="btn ${L==i?"":"alt"}" style="min-height:48px" onclick="setL(${i})">${n}</button>`).join("")}</div></div>`+_me()};
+V.career=function(){const me=S.workers.find(w=>w.id==uid)||{},my=S.apps.filter(a=>a.wid==uid);
+return`<div class="card"><div class="ct">${esc(me.name||"")} ${rt(uid)}</div><div class="mut">📍 ${esc([me.city,me.state].filter(Boolean).join(", "))} · 📱 ${esc(me.phone||"")} ${me.phoneVerified?tt("otpok"):"("+tt("nv")+")"}</div>${me.edu?`<div class="mut">🎓 ${esc(me.edu)}${me.course?" · "+esc(me.course):""}</div>`:""}</div><h3>${tt("myskills")}</h3>`+((me.skills||[]).map(s=>`<div class="card"><b>${esc(s.n)}</b><div class="mut">${esc(s.y||0)} ${L==2?"yrs":L?"वर्षे":"साल"} · ${tt("l"+(s.l||1))}</div>${s.d?`<div>${esc(s.d)}</div>`:""}</div>`).join("")||`<p class="empty">${t("none")}</p>`)+`<h3>${tt("applied2")}</h3>`+(my.length?my.map(a=>{const j=S.jobs.find(j=>j.id==a.jobId);return`<div class="card"><b>${j?esc(j.title):""}</b> ${j?rt(j.owner):""}<div class="mut">${j?"📍 "+esc(j.place):""}</div><div>${SLT(a.status||"applied")}</div>${a.msg?`<div class="demo" style="margin-top:6px">${tt("msgfrom")}: ${esc(a.msg)}</div>`:""}${dealBox(a,0)}${dealDone(a)&&j?`<button class="btn alt" style="min-height:48px;margin-top:8px" onclick="rv={to:'${j.owner}'};render();scrollTo(0,0)">${t("rate")}</button>`:""}</div>`}).join(""):`<p class="empty">${tt("noapp")}</p>`)};
+const _at=window.attach;window.attach=function(api){const w=api.watch;api.watch=(c,cb)=>w(c,r=>{if(c=="workers")LW=1;cb(r)});_at(api)};
+document.head.insertAdjacentHTML("beforeend","<style>.lang button:not(.sp){display:none}#bc{color:var(--or)}</style>");
+document.querySelector(".lang").insertAdjacentHTML("afterbegin",'<button class="sp" onclick="nv(\'career\')">🔔<sup id="bc"></sup></button>');
+const _render=render;
+render=function(){const me=S.workers.find(w=>w.id==uid);
+if(!me&&((!db&&BOOT)||(db&&!LW))){$("#app").innerHTML='<p class="empty">…</p>';$("nav").style.display="none";return}
+const gate=!me;$("nav").style.display=gate?"none":"";document.querySelector(".lang").style.display=gate?"none":"";
+if(gate){$("#app").innerHTML=obHtml();$("#demo").innerHTML=db?"":`<div class="demo">${t("demo")}</div>`;return}
+_render();const nb=$("nav").children,lb=["hm","kaam","car","mine"],em=["🏠","🧰","🚀","👤"],vw=["home","jobs","career","me"];
+for(let i=0;i<4;i++){nb[i].querySelector("b").textContent=em[i];nb[i].querySelector("i").textContent=tt(lb[i]);nb[i].className=(view==vw[i]||(i==1&&view=="workers"))?"on":""}
+nb[2].onclick=()=>nv("career");const n=S.apps.filter(a=>a.wid==uid&&a.status&&a.status!="applied"&&!a.seenW).length;$("#bc").textContent=n||""};
+setTimeout(()=>{BOOT=0;if(db&&!LW)LW=1;render()},3000);
+render();
+</script>
+
+<script>
+/* ===== v3: work agreement + payment tracker (no money is held by the app) ===== */
+Object.assign(TT,{
+deal:["📝 काम का समझौता","📝 कामाचा करार","📝 Work agreement"],
+dnote:["यह भुगतान ट्रैकर है। पैसा सीधे आप दोनों के बीच जाता है, ऐप पैसा नहीं रखता।","हा पेमेंट ट्रॅकर आहे. पैसे थेट तुमच्या दोघांमध्ये जातात, अ‍ॅप पैसे ठेवत नाही.","This is a payment tracker. Money goes directly between you two; the app does not hold money."],
+dterms:["शर्तें (समय, छुट्टी, काम का ब्यौरा)","अटी (वेळ, सुट्टी, कामाचा तपशील)","Terms (hours, leave, work details)"],
+dlab:["किश्त का नाम","हप्त्याचे नाव","Installment name"],damt:["रक़म ₹","रक्कम ₹","Amount ₹"],
+dsend:["समझौता भेजें","करार पाठवा","Send agreement"],dagree:["✔ शर्तें और रक़म मंज़ूर","✔ अटी आणि रक्कम मान्य","✔ Accept terms and amount"],
+dwait:["कारीगर की मंज़ूरी का इंतज़ार","कामगाराच्या मान्यतेची वाट","Waiting for worker to accept"],
+dwdone:["काम हो गया","काम झाले","Work done"],dpay:["ठीक है, पैसा भेज दिया","ठीक आहे, पैसे पाठवले","Work OK, payment sent"],drecv:["पैसा मिल गया","पैसे मिळाले","Payment received"],
+ddone:["✔ पूरा हुआ","✔ पूर्ण झाले","✔ Completed"],
+ddisp:["⚠️ विवाद / शिकायत दर्ज करें","⚠️ वाद / तक्रार नोंदवा","⚠️ Report a problem"],ddt:["क्या हुआ? लिखिए","काय झाले? लिहा","What happened?"],dok:["दर्ज हो गया ✔","नोंदवले ✔","Recorded ✔"],
+dfirst:["काम शुरू पर","काम सुरू करताना","On starting work"],dsecond:["काम पूरा होने पर","काम पूर्ण झाल्यावर","On finishing work"],
+dlock:["रेटिंग तब खुलेगी जब काम पूरा हो और पैसा मिल जाए","रेटिंग काम पूर्ण आणि पैसे मिळाल्यावर उघडेल","Rating opens when work is done and payment received"]});
+const DF={},DS={},inl=(a,k)=>a[k]||[];
+function dealDone(a){const d=a.deal;return !!(d&&d.ms&&d.ms.length&&d.ms.every((m,i)=>inl(a,"oPaid").includes(i)&&inl(a,"wRecv").includes(i)))}
+function upd(id,f){const a=S.apps.find(x=>x.id==id);if(!a)return;const d=Object.assign({},a,f);delete d.id;wr("apps",id,d)}
+function dealForm(a){const f=DF[a.id]||(DF[a.id]={t:"",r:[{l:tt("dfirst"),a:""},{l:tt("dsecond"),a:""}]});
+return`<div class="card" style="margin:8px 0"><b>${tt("deal")}</b><input style="margin-top:6px" placeholder="${tt("dterms")}" value="${esc(f.t)}" oninput="DF['${a.id}'].t=this.value">`+f.r.map((r,i)=>`<div class="row" style="margin-top:6px"><input placeholder="${tt("dlab")}" value="${esc(r.l)}" oninput="DF['${a.id}'].r[${i}].l=this.value"><input type="number" inputmode="numeric" placeholder="${tt("damt")}" value="${esc(r.a)}" oninput="DF['${a.id}'].r[${i}].a=this.value"></div>`).join("")+`<button class="btn" style="min-height:48px;margin-top:8px" onclick="sendDeal('${a.id}')">${tt("dsend")}</button><p class="mut">${tt("dnote")}</p></div>`}
+function sendDeal(id){const a=S.apps.find(x=>x.id==id),f=DF[id],ms=f.r.filter(r=>+r.a>0).map(r=>({l:r.l||"",a:+r.a}));if(!ms.length){toast(tt("damt"));return}
+upd(id,{deal:{terms:f.t||"",ms,total:ms.reduce((s,m)=>s+m.a,0),v:((a.deal&&a.deal.v)||0)+1},seenW:0});toast(t("saved"))}
+function dealAct(id,k,v){const a=S.apps.find(x=>x.id==id);if(!a)return;upd(id,k=="wAgree"?{wAgree:v}:{[k]:inl(a,k).concat([v])})}
+function dealDisp(id,own){const a=S.apps.find(x=>x.id==id),tx=(DS[id]||"").trim();if(!a||!tx)return;const j=S.jobs.find(x=>x.id==a.jobId)||{};
+upd(id,own?{oDispute:tx}:{wDispute:tx});wr("reports",uid+"_"+id,{target:own?a.wid:j.owner||"",app:id,from:uid,text:tx,ts:Date.now()});DS[id]="";toast(tt("dok"))}
+function dealBox(a,own){const d=a.deal;if(!d)return own&&a.status=="hired"?dealForm(a):"";
+const ok=a.wAgree===d.v,done=dealDone(a),id=a.id,b=(fn,l)=>`<button class="btn" style="min-height:44px;font-size:15px;margin-top:6px" onclick="${fn}">${l}</button>`;
+const rows=d.ms.map((m,i)=>{const wd=inl(a,"wDone").includes(i),op=inl(a,"oPaid").includes(i),rc=inl(a,"wRecv").includes(i);let act="";
+if(ok&&!own&&!wd)act=b(`dealAct('${id}','wDone',${i})`,tt("dwdone"));
+if(ok&&own&&wd&&!op)act=b(`dealAct('${id}','oPaid',${i})`,tt("dpay"));
+if(!own&&op&&!rc)act=b(`dealAct('${id}','wRecv',${i})`,tt("drecv"));
+return`<div style="margin-top:8px;border-top:1px solid var(--line);padding-top:6px"><b>${esc(m.l)}</b> · ₹${esc(m.a)}<div class="mut">${wd?"✔ "+tt("dwdone")+" ":""}${op?"✔ "+tt("dpay")+" ":""}${rc?"✔ "+tt("drecv"):""}</div>${act}</div>`}).join("");
+const ag=ok?"":(own?`<div class="mut">${tt("dwait")}</div>`:b(`dealAct('${id}','wAgree',${d.v})`,tt("dagree")));
+const mine=own?a.oDispute:a.wDispute,theirs=own?a.wDispute:a.oDispute;
+return`<div class="card" style="margin:8px 0"><b>${tt("deal")}</b> ${done?tt("ddone"):""}<div class="mut">${esc(d.terms||"")}</div><div>₹${esc(d.total)}</div>${rows}${ag}${theirs?`<div class="demo" style="margin-top:8px">⚠️ ${esc(theirs)}</div>`:""}${mine?`<div class="demo" style="margin-top:8px">⚠️ ${esc(mine)}</div>`:""}<input style="margin-top:8px" placeholder="${tt("ddt")}" oninput="DS['${id}']=this.value"><button class="btn alt" style="min-height:44px;font-size:15px;margin-top:6px" onclick="dealDisp('${id}',${own?1:0})">${tt("ddisp")}</button>${done?"":`<div class="mut" style="margin-top:6px">${tt("dlock")}</div>`}<p class="mut">${tt("dnote")}</p></div>`}
+render();
+</script>
+
+<script>
+/* ===== v4: area filter (city/area), voice with area, hold-to-talk ===== */
+Object.assign(TT,{areaph:["📍 इलाक़ा / शहर (जैसे: नागपुर)","📍 परिसर / शहर (उदा. नागपूर)","📍 Area / city (e.g. Nagpur)"],holdhint:["बटन दबाए रखकर बोलिए, छोड़ते ही खोज होगी। जैसे: नागपुर में इलेक्ट्रीशियन","बटण दाबून ठेवून बोला, सोडताच शोध होईल. उदा. नागपूरमध्ये इलेक्ट्रिशियन","Hold the button and speak, release to search. e.g. electrician in Nagpur"],areaclr:["सब जगह","सर्वत्र","Everywhere"]});
+const AL=[["नागपुर","nagpur"],["नागपूर","nagpur"],["चंद्रपुर","chandrapur"],["चंद्रपूर","chandrapur"],["चन्द्रपुर","chandrapur"],["पुणे","pune"],["मुंबई","mumbai"],["मुम्बई","mumbai"],["ठाणे","thane"],["नाशिक","nashik"],["नासिक","nashik"],["इंदौर","indore"],["जयपुर","jaipur"],["दिल्ली","delhi"],["औरंगाबाद","aurangabad"],["संभाजीनगर","aurangabad"],["अमरावती","amravati"],["वर्धा","wardha"],["यवतमाळ","yavatmal"],["यवतमाल","yavatmal"],["गोंदिया","gondia"],["भंडारा","bhandara"],["कोल्हापूर","kolhapur"],["कोल्हापुर","kolhapur"],["सोलापूर","solapur"],["सोलापुर","solapur"],["हैदराबाद","hyderabad"],["बेंगलुरु","bengaluru"],["बंगलौर","bengaluru"],["बैंगलोर","bengaluru"],["चेन्नई","chennai"],["कोलकाता","kolkata"],["अहमदाबाद","ahmedabad"],["सूरत","surat"],["लखनऊ","lucknow"],["भोपाल","bhopal"],["पटना","patna"],["रायपुर","raipur"],["नांदेड","nanded"],["अकोला","akola"],["जळगाव","jalgaon"],["जलगांव","jalgaon"],["लातूर","latur"],["बीड","beed"],["सातारा","satara"],["सांगली","sangli"],["रत्नागिरी","ratnagiri"],["गडचिरोली","gadchiroli"],["बुलढाणा","buldhana"],["वाशिम","washim"],["हिंगोली","hingoli"],["परभणी","parbhani"],["जालना","jalna"],["धुळे","dhule"],["अहमदनगर","ahmednagar"],["रायगड","raigad"],["पालघर","palghar"],["गोवा","goa"],["नोएडा","noida"],["गुरुग्राम","gurugram"],["चंडीगढ़","chandigarh"],["जबलपुर","jabalpur"],["कानपुर","kanpur"],["वाराणसी","varanasi"],["अमृतसर","amritsar"],["लुधियाना","ludhiana"],["रांची","ranchi"],["भुवनेश्वर","bhubaneswar"],["गुवाहाटी","guwahati"],["कोच्चि","kochi"],["कोयंबटूर","coimbatore"],["मदुरै","madurai"],["विशाखापत्तनम","visakhapatnam"],["विजयवाड़ा","vijayawada"]].sort((a,b)=>b[0].length-a[0].length);
+const CITIES=[...new Set(AL.map(x=>x[1]))];
+let AR="",REC=null,T0=0;
+const nz=x=>{let s=String(x||"").toLowerCase();AL.forEach(a=>{s=s.split(a[0]).join(a[1])});return s};
+const cityFrom=x=>{const n=nz(x);return CITIES.find(c=>n.includes(c))||""};
+function areaOK(x){if(!AR)return true;const h=nz([x.place,x.city,x.state].join(" "));return h.includes(nz(AR))||/online/i.test(x.place||"")}
+const _jf3=jf;jf=function(){return _jf3().filter(areaOK)};
+function startRec(cb){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){toast(t("noVoice"));return}
+try{if(REC){try{REC.abort()}catch(e){}}const r=new R();REC=r;r.lang=LC[L];r.onresult=e=>{toast("");cb(e.results[0][0].transcript)};r.onerror=()=>toast(t("noVoice"));r.onend=()=>{REC=null;if($("#msg").textContent===t("listening"))toast("")};toast(t("listening"),0);r.start()}catch(e){toast(t("noVoice"))}}
+function voiceSearch(tx){const s=tx.toLowerCase(),c=C.find(c=>c.k.split(",").some(w=>s.includes(w.toLowerCase())));
+cat=c?c.id:"";grp=c&&c.g?1:0;AR=cityFrom(s);SQ="";q="";view="jobs";render();say(jf().length+" "+t("found"))}
+function micDown(e){gest=true;T0=Date.now();startRec(voiceSearch)}
+function micUp(){if(REC&&Date.now()-T0>600){try{REC.stop()}catch(e){}}}
+function micArea(){gest=true;startRec(tx=>{AR=cityFrom(tx)||tx.trim();render()})}
+function areaBox(){return`<div class="f" style="margin-top:8px"><input id="ar" list="cts" placeholder="${tt("areaph")}" value="${esc(AR)}" onchange="AR=this.value.trim();render()"><button class="m" onclick="AR=$('#ar').value.trim();render()">🔍</button><button class="m" onclick="micArea()">🎤</button></div><datalist id="cts">${CITIES.map(c=>`<option value="${c[0].toUpperCase()+c.slice(1)}">`).join("")}</datalist>${AR?`<p class="mut">📍 ${esc(AR)} <button class="x" onclick="AR='';render()">✕ ${tt("areaclr")}</button></p>`:""}`}
+const _jobs4=V.jobs,_wk4=V.workers,_home4=V.home;
+V.jobs=function(){return areaBox()+_jobs4()};
+V.workers=function(){return areaBox()+_wk4()};
+V.home=function(){return _home4().replace('<div class="col">',`<p class="mut" style="text-align:center">${tt("holdhint")}</p><div class="col">`)};
+document.head.insertAdjacentHTML("beforeend","<style>.mic{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}</style>");
+render();
+</script>
+
+<script>
+/* ===== v5: SMS OTP number verification (built, switched OFF until Firebase Blaze is enabled) ===== */
+let OTP_ON=/[?&#]otp=1/.test(location.href);
+Object.assign(TT,{otpsend:["OTP भेजें","OTP पाठवा","Send OTP"],otpcode:["SMS में आया 6 अंक का कोड","SMS मधील 6 अंकी कोड","6-digit code from SMS"],otpverify:["जाँचिए","तपासा","Verify"],otpok:["✔ नंबर जाँचा हुआ","✔ नंबर पडताळला","✔ Number verified"],otpbad:["कोड सही नहीं है","कोड बरोबर नाही","Wrong code"],otpwait:["OTP भेज रहे हैं…","OTP पाठवत आहोत…","Sending OTP…"],otpre:["दोबारा भेजें","पुन्हा पाठवा","Resend"]});
+document.body.insertAdjacentHTML("beforeend",'<div id="rc"></div>');
+window.setUid=function(x){if(x&&x!=uid)uid=x;render()};
+window.onOtpAuto=function(c){OB.code=c;if(OB.sent){const e=$("#otpc");if(e)e.value=c;otpVerify()}};
+function startWebOtp(){try{if("OTPCredential" in window){navigator.credentials.get({otp:{transport:["sms"]}}).then(o=>{if(o&&o.code)window.onOtpAuto(o.code)}).catch(()=>{})}}catch(e){}}
+function otpSend(){const d=OB.d;if(!/^[6-9]\d{9}$/.test(d.ph)){toast(tt("badnum"));return}if(!window.FBPhone){toast(t("demo"));return}
+OB.sent=1;toast(tt("otpwait"),0);startWebOtp();window.FBPhone.send("+91"+d.ph).then(()=>{toast("");render()}).catch(e=>{toast("⚠️ "+(e.code||e.message),6000);OB.sent=0;render()})}
+function otpVerify(){const c=(OB.code||"").trim();if(c.length<6){toast(tt("otpbad"));return}
+window.FBPhone.confirm(c).then(u=>{OB.d.pv=1;OB.sent=0;OB.code="";toast(tt("otpok"));if(u)window.setUid(u);OB.step=2;render()}).catch(()=>toast(tt("otpbad")))}
+function otpHtml(){const d=OB.d;return`<div class="mut" style="margin-top:10px">2/4</div><h2>${tt("mob")}</h2><div class="f"><span class="btn alt" style="width:auto;min-height:54px">+91</span><input type="tel" inputmode="numeric" maxlength="10" value="${esc(d.ph)}" ${OB.sent?"disabled":""} oninput="OB.d.ph=this.value"></div>`+
+(OB.sent?`<label>${tt("otpcode")}</label><input id="otpc" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="${esc(OB.code||"")}" oninput="OB.code=this.value"><div class="col"><button class="btn" onclick="otpVerify()">${tt("otpverify")}</button><button class="btn alt" onclick="otpSend()">${tt("otpre")}</button></div>`:`<div class="col"><button class="btn" onclick="otpSend()">${tt("otpsend")}</button></div>`)}
+const _obNext5=obNext,_obHtml5=obHtml;
+obNext=function(){if(OTP_ON&&OB.step==1){otpSend();return}_obNext5()};
+obHtml=function(){if(OTP_ON&&OB.step==1)return otpHtml();return _obHtml5()};
+render();
+</script>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged,RecaptchaVerifier,PhoneAuthProvider,linkWithCredential,signInWithCredential}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,collection,doc,setDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyB-rFWn_mB7UQF_zWbnddeiKnOpU2EizDg",authDomain:"kam-dhanda.firebaseapp.com",projectId:"kam-dhanda",storageBucket:"kam-dhanda.firebasestorage.app",messagingSenderId:"432804031807",appId:"1:432804031807:web:dd4df7ba03b4e6f511f78a"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),fs=getFirestore(app);let done=0;
+onAuthStateChanged(auth,u=>{if(u&&done&&window.setUid)window.setUid(u.uid);if(u&&!done){done=1;window.attach({uid:u.uid,set:(c,i,d)=>setDoc(doc(fs,c,i),d),watch:(c,cb)=>onSnapshot(collection(fs,c),q=>cb(q.docs.map(x=>Object.assign({id:x.id},x.data()))),()=>{})})}});
+signInAnonymously(auth).catch(()=>{});
+window.FBPhone={async send(num){window.__rv=window.__rv||new RecaptchaVerifier(auth,"rc",{size:"invisible"});window.__vid=await new PhoneAuthProvider(auth).verifyPhoneNumber(num,window.__rv)},
+async confirm(code){const cred=PhoneAuthProvider.credential(window.__vid,code);try{await linkWithCredential(auth.currentUser,cred)}catch(e){if(e.code=="auth/credential-already-in-use"||e.code=="auth/account-exists-with-different-credential"){await signInWithCredential(auth,cred)}else throw e}return auth.currentUser.uid}};
+</script>
+</body></html>
